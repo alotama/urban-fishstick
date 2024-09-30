@@ -129,7 +129,7 @@ El parámetro `default_limits` en el archivo `config.json` define los límites d
 }
 ```
 
-Implementación Actual de la Caché y Posibles Mejoras
+## Implementación Actual de la Caché y Posibles Mejoras
 
 Actualmente, la caché en el proyecto se implementa utilizando un diccionario en memoria para almacenar los resultados de las comparaciones de nombres. Aunque esta solución es funcional, presenta limitaciones como la falta de persistencia entre reinicios, problemas de escalabilidad a medida que aumenta el volumen de datos, la ausencia de un mecanismo de expiración de entradas, y posibles conflictos en entornos concurrentes. Esta implementación se encuentra en el archivo `services/cache_service.py` y está definida de la siguiente manera:
 
