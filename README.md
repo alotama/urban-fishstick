@@ -112,6 +112,23 @@ curl -X POST http://localhost:5000/login \
 
 Asegúrate de que las variables de entorno sensibles, como `env_encryption_key` y `env_JWT_SECRET_KEY`, no estén hardcodeadas en el código. Utiliza un archivo `.env` o un gestor de secretos, como Fury Secrets.
 
+**Configuración del Limite de la Tasa de Solicitudes**
+
+El parámetro "default_limits" dentro del archivo config.json especifica los límites de tasa predeterminados para la aplicación `Flask`, utilizando la extensión `Flask-Limiter`. Este valor puede ser modificado para ajustar la cantidad de solicitudes permitidas por unidad de tiempo, lo que permite controlar el tráfico y prevenir abusos. Por ejemplo:
+
+1. Configuración actual: Limite de 60 solicitudes por minuto. 
+```
+{
+    "default_limits": "60 per minute"
+}
+```
+2. Configuración modificada: Nuevo límite de 100 solicitudes por minuto.
+```
+{
+    "default_limits": "100 per minute"
+}
+```
+
 ### **Implementación Actual de la Caché y Posibles Mejoras**
 
 Actualmente, la implementación de la caché en el proyecto utiliza un simple diccionario en memoria para almacenar los resultados de las comparaciones de nombres. **Si bien esta solución es funcional, tiene limitaciones como la falta de persistencia entre reinicios**, problemas de escalabilidad a medida que los datos crecen, la ausencia de un mecanismo de expiración de entradas, y posibles conflictos en entornos concurrentes. Esta implementación se encuentra en el archivo `services/cache_service.py` y se define de la siguiente manera:

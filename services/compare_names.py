@@ -9,4 +9,5 @@ def compare_names(input_name, name_list, similarity_threshold):
                 'name': name,
                 'similarity': similarity
             })
+    results.sort(key=lambda x: x['similarity'], reverse=True)
     return results

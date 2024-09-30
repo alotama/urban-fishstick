@@ -1,6 +1,5 @@
 {
     "env_encryption_key": "IXhCS0sWmhkDicJDTOsZH_d7nWKysAhnPdmiYsz7OMs=",
     "env_JWT_SECRET_KEY": "secret_key",
-    "similarity_threshold": 80,
     "default_limits": "60 per minute"
 }

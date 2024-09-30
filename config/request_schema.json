@@ -4,8 +4,13 @@
         "names": {
             "type": "array",
             "items": {"type": "string"}
+        },
+        "similarity_threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
         }
     },
-    "required": ["names"],
+    "required": ["names", "similarity_threshold"],
     "additionalProperties": false
 }
