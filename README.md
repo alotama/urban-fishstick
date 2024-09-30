@@ -114,7 +114,7 @@ Asegúrate de que las variables de entorno sensibles, como `env_encryption_key` 
 
 **Configuración del Limite de la Tasa de Solicitudes**
 
-El parámetro "default_limits" dentro del archivo config.json especifica los límites de tasa predeterminados para la aplicación `Flask`, utilizando la extensión `Flask-Limiter`. Este valor puede ser modificado para ajustar la cantidad de solicitudes permitidas por unidad de tiempo, lo que permite controlar el tráfico y prevenir abusos. Por ejemplo:
+El parámetro `default_limits` en el archivo `config.json` define los límites de tasa predeterminados para la aplicación `Flask`, usando la extensión `Flask-Limiter`. Este valor se puede ajustar para controlar el número de solicitudes permitidas por unidad de tiempo, ayudando a gestionar el tráfico y prevenir abusos. Por ejemplo:
 
 1. Configuración actual: Limite de 60 solicitudes por minuto. 
 ```
@@ -129,18 +129,43 @@ El parámetro "default_limits" dentro del archivo config.json especifica los lí
 }
 ```
 
-### **Implementación Actual de la Caché y Posibles Mejoras**
+Implementación Actual de la Caché y Posibles Mejoras
 
-Actualmente, la implementación de la caché en el proyecto utiliza un simple diccionario en memoria para almacenar los resultados de las comparaciones de nombres. **Si bien esta solución es funcional, tiene limitaciones como la falta de persistencia entre reinicios**, problemas de escalabilidad a medida que los datos crecen, la ausencia de un mecanismo de expiración de entradas, y posibles conflictos en entornos concurrentes. Esta implementación se encuentra en el archivo `services/cache_service.py` y se define de la siguiente manera:
+Actualmente, la caché en el proyecto se implementa utilizando un diccionario en memoria para almacenar los resultados de las comparaciones de nombres. Aunque esta solución es funcional, presenta limitaciones como la falta de persistencia entre reinicios, problemas de escalabilidad a medida que aumenta el volumen de datos, la ausencia de un mecanismo de expiración de entradas, y posibles conflictos en entornos concurrentes. Esta implementación se encuentra en el archivo `services/cache_service.py` y está definida de la siguiente manera:
 
 ```
 cache = {}
 ```
 
-**Posibles Mejoras**
+**Mejoras Propuestas**
 
-Para mejorar estas limitaciones, se propone utilizar una caché distribuida como *Redis* o *Memcached*, lo que permitiría una mayor escalabilidad, persistencia de datos y mejor manejo de memoria. También se sugiere implementar un tiempo de vida (TTL) para las entradas, considerar persistencia con soluciones como SQLite, y añadir mecanismos de bloqueo para evitar inconsistencias en accesos concurrentes.
+Para abordar estas limitaciones, se recomienda implementar una caché distribuida como Redis o Memcached, lo que permitiría una mayor escalabilidad, persistencia de datos y un manejo más eficiente de la memoria. Además, se debería añadir un mecanismo de tiempo de vida (TTL) para las entradas de la caché, evaluar el uso de una base de datos ligera como SQLite para la persistencia, y aplicar mecanismos de bloqueo para evitar inconsistencias en entornos con acceso concurrente.
 
 ### Autenticación
 
-Para el endpoint `/login` la implementación actual está diseñada únicamente para el desarrollo local. En esta versión, se utilizan credenciales estáticas (username y password ambos configurados como "test") para simplificar las pruebas y el desarrollo. **Para el despliegue en un entorno de producción, es crucial implementar una lógica de autenticación más robusta.**
+Actualmente, el endpoint `/login` está configurado solo para el desarrollo local, utilizando credenciales estáticas (ambos valores de username y password son "test"). Para un despliegue en producción, es imprescindible implementar un sistema de autenticación más robusto y seguro, con manejo adecuado de credenciales y almacenamiento seguro de contraseñas.
+
+### Tests
+
+Antes de realizar el despliegue, es esencial llevar a cabo pruebas exhaustivas para garantizar que los endpoints funcionen correctamente y que el sistema sea robusto. A continuación se detallan algunas pruebas clave:
+
+1. **Pruebas de Autenticación:**
+   - Verificar que el endpoint `/login` autentique correctamente a los usuarios con credenciales válidas y que se generen y devuelvan tokens JWT válidos.
+   - Probar el manejo de credenciales inválidas y la devolución de mensajes de error apropiados.
+
+2. **Pruebas de Integridad de Datos:**
+   - Evaluar el endpoint `/areCompromisedNames`, enviando diferentes nombres y umbrales de similitud, y verificar que los resultados incluyan los campos correctos (name, similarity) y estén ordenados adecuadamente.
+
+3. **Pruebas de Validación de Esquema:**
+   - Enviar datos que no cumplan con el esquema JSON definido en `request_schema.json` para comprobar la correcta gestión de errores de validación.
+
+4. **Pruebas de Rendimiento:**
+   - Realizar pruebas de carga para evaluar el comportamiento bajo alta demanda, y verificar que el límite de tasa definido en `config.json` sea respetado.
+
+5. **Pruebas de Seguridad:**
+   - Asegurarse de que los endpoints protegidos solo se puedan acceder mediante un token JWT válido y probar el manejo de tokens expirados o inválidos.
+
+6. **Pruebas de Integración:**
+   - Verificar la integración entre los diferentes módulos de la aplicación y asegurarse de que las funciones de carga y cifrado funcionen correctamente con los endpoints.
+
+Estas pruebas garantizarán que la aplicación esté lista para ser desplegada de manera segura y eficiente en un entorno de producción, brindando una experiencia confiable para los usuarios finales.
