@@ -1,3 +1,4 @@
 {
-    "similarity_threshold": 80
+    "similarity_threshold": 80,
+    "default_limits": "60 per minute"
 }

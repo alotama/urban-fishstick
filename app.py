@@ -1,6 +1,8 @@
 from flask import Flask, request
 import json
 from jsonschema import validate, ValidationError
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from services.compare_names import compare_names
 from utils.load_names import load_names
@@ -23,12 +25,17 @@ except FileNotFoundError:
     print("Error: request_schema.json no encontrado.")
     exit(1)
 
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[config.get("default_limits", "60 per minute")]
+)
+
 @app.route('/areCompromisedNames', methods=['POST'])
 def compare():
     try:
         data = request.get_json()
         
-        # Validate the request body
         validate(instance=data, schema=request_schema)
         
         input_names = data['names']
