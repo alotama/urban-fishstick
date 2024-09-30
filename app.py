@@ -8,6 +8,7 @@ from services.compare_names import compare_names
 from utils.load_names import load_names
 from utils.handle_response import handle_response
 from services.cache_service import cache
+from utils.encryption import decrypt_file, encrypt_file, generate_key
 
 app = Flask(__name__)
 
@@ -23,6 +24,12 @@ try:
         request_schema = json.load(schema_file)
 except FileNotFoundError:
     print("Error: request_schema.json no encontrado.")
+    exit(1)
+
+try:
+    env_encryption_key = config['env_encryption_key'].encode()
+except KeyError:
+    print("Error: env_encryption_key no encontrado en config.json.")
     exit(1)
 
 limiter = Limiter(
@@ -41,7 +48,10 @@ def compare():
         input_names = data['names']
         similarity_threshold = config['similarity_threshold']
         
+
+        decrypt_file('assets/names_dataset.csv', env_encryption_key)
         name_list = load_names('assets/names_dataset.csv')
+        encrypt_file('assets/names_dataset.csv', env_encryption_key)
         
         results = []
         for input_name in input_names:
