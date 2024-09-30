@@ -1,37 +1,21 @@
-from flask import Flask, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-import json
-from jsonschema import validate, ValidationError
+from flask import Flask
+from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-
-from services.compare_names import compare_names
-from utils.load_names import load_names
-from utils.handle_response import handle_response
-from services.cache_service import cache
-from utils.encryption import decrypt_file, encrypt_file, generate_key
+from config import load_config, load_request_schema
+from auth import auth_bp
+from routes import main_bp
 
 app = Flask(__name__)
 
-try:
-    with open('./config.json') as config_file:
-        config = json.load(config_file)
-except FileNotFoundError:
-    print("Error: config.json no encontrado.")
-    exit(1)
-
-try:
-    with open('./request_schema.json') as schema_file:
-        request_schema = json.load(schema_file)
-except FileNotFoundError:
-    print("Error: request_schema.json no encontrado.")
-    exit(1)
+config = load_config()
+request_schema = load_request_schema()
 
 try:
     env_encryption_key = config['env_encryption_key'].encode()
     jwt_secret_key = config['env_JWT_SECRET_KEY']
-except KeyError:
-    print("Error: env_encryption_key no encontrado en config.json.")
+except KeyError as e:
+    print(f"Error: {e} no encontrado en config.json.")
     exit(1)
 
 limiter = Limiter(
@@ -43,53 +27,8 @@ limiter = Limiter(
 app.config['JWT_SECRET_KEY'] = jwt_secret_key
 jwt = JWTManager(app)
 
-@app.route('/login', methods=['POST'])
-def login():
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
-    
-    if username != 'test' or password != 'test':
-        return jsonify({"msg": "Bad username or password"}), 401
-
-    access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token)
-
-@app.route('/areCompromisedNames', methods=['POST'])
-@jwt_required()
-def compare():
-    try:
-        data = request.get_json()
-        
-        validate(instance=data, schema=request_schema)
-        
-        input_names = data['names']
-        similarity_threshold = config['similarity_threshold']
-        
-        decrypt_file('assets/names_dataset.csv', env_encryption_key)
-        name_list = load_names('assets/names_dataset.csv')
-        encrypt_file('assets/names_dataset.csv', env_encryption_key)
-        
-        results = []
-        for input_name in input_names:
-            cache_key = (input_name, similarity_threshold)
-            if cache_key in cache:
-                print(f"Result for {input_name} obtained from cache")
-                compromised_name = cache[cache_key]
-            else:
-                comparison_results = compare_names(input_name, name_list, similarity_threshold)
-                compromised_name = len(comparison_results) > 0
-                cache[cache_key] = compromised_name
-            
-            results.append({
-                'name': input_name,
-                'compromised_name': compromised_name
-            })
-        
-        return handle_response(results, status=200)
-    except ValidationError as e:
-        return handle_response({'error': f'Invalid request: {e.message}'}, status=400)
-    except Exception as e:
-        return handle_response({'error': str(e)}, status=500)
+app.register_blueprint(auth_bp)
+app.register_blueprint(main_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
