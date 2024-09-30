@@ -3,8 +3,8 @@ from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config.config import load_config, load_request_schema
-from routes.auth import auth_bp
-from routes.routes import main_bp
+from routes.login import auth_bp
+from routes.areCompromisedNames import main_bp
 
 app = Flask(__name__)
 
