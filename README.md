@@ -97,7 +97,7 @@ curl -X POST http://localhost:5000/login \
 | Dataset de Nombres                                     | `assets/names_dataset.csv`      | Archivo CSV que contiene la lista de nombres a comparar.                                                                    |
 
 
-## Justificación de Librerías y Decisiones de Diseño
+## Librerías Usadas
 
 - **Flask:** Seleccionado por su simplicidad y flexibilidad para construir aplicaciones web ligeras.
 - **Flask-JWT-Extended:** Utilizado para manejar la autenticación basada en tokens JWT.
