@@ -1,4 +1,5 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import json
 from jsonschema import validate, ValidationError
 from flask_limiter import Limiter
@@ -28,6 +29,7 @@ except FileNotFoundError:
 
 try:
     env_encryption_key = config['env_encryption_key'].encode()
+    jwt_secret_key = config['env_JWT_SECRET_KEY']
 except KeyError:
     print("Error: env_encryption_key no encontrado en config.json.")
     exit(1)
@@ -38,7 +40,22 @@ limiter = Limiter(
     default_limits=[config.get("default_limits", "60 per minute")]
 )
 
+app.config['JWT_SECRET_KEY'] = jwt_secret_key
+jwt = JWTManager(app)
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+    
+    if username != 'test' or password != 'test':
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    access_token = create_access_token(identity=username)
+    return jsonify(access_token=access_token)
+
 @app.route('/areCompromisedNames', methods=['POST'])
+@jwt_required()
 def compare():
     try:
         data = request.get_json()
@@ -48,7 +65,6 @@ def compare():
         input_names = data['names']
         similarity_threshold = config['similarity_threshold']
         
-
         decrypt_file('assets/names_dataset.csv', env_encryption_key)
         name_list = load_names('assets/names_dataset.csv')
         encrypt_file('assets/names_dataset.csv', env_encryption_key)
