@@ -5,6 +5,7 @@ from flask_limiter.util import get_remote_address
 from config.config import load_config, load_request_schema
 from routes.login import auth_bp
 from routes.areCompromisedNames import main_bp
+from routes.status import status_bp
 
 app = Flask(__name__)
 
@@ -29,6 +30,7 @@ jwt = JWTManager(app)
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(main_bp)
+app.register_blueprint(status_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

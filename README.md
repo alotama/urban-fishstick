@@ -1,8 +1,59 @@
-# Documento de Arquitectura del Sistema
-
-## Introducción
+# Introducción
 
 Este documento describe la arquitectura y los componentes del sistema, incluyendo un diagrama de arquitectura que ilustra la interacción entre los diferentes componentes. 
+
+## Configuración del proyecto
+
+Asegúrate de tener el archivo de configuración config.json en el directorio config/. Este archivo debe contener las claves necesarias para la configuración del proyecto, como env_encryption_key y env_JWT_SECRET_KEY.
+
+```json
+{
+    "env_encryption_key": "TU_CLAVE_DE_CIFRADO",
+    "env_JWT_SECRET_KEY": "TU_CLAVE_SECRETA_JWT",
+    "default_limits": "60 per minute"
+}
+```
+
+## Ejecutar la Aplicación
+
+Para ejecutar la aplicación en modo desarrollo, utiliza el siguiente comando:
+
+```
+python app.py
+```
+
+La aplicación estará disponible en http://127.0.0.1:5000.
+
+## Endpoints Disponibles
+
+### POST /login
+
+- **Descripción:** Autentica a un usuario mediante credenciales.
+- **Ruta:** `routes/login.py`
+- **Parámetros:**
+  - `username`: Nombre de usuario.
+  - `password`: Contraseña del usuario.
+- **Respuesta:**
+  - `200 OK`: Devuelve un token JWT si la autenticación es exitosa.
+  - `401 Unauthorized`: Si las credenciales son incorrectas.
+
+### POST /areCompromisedNames
+
+- **Descripción:** Compara una lista de nombres para determinar si están comprometidos.
+- **Ruta:** `routes/areCompromisedNames.py`
+- **Parámetros:**
+  - `names`: Lista de nombres a comparar.
+- **Respuesta:**
+  - `200 OK`: Devuelve los nombres comprometidos.
+  - `429 Too Many Requests`: Si se excede el límite de tasa.
+  - `400 Bad Request`: Si la solicitud no cumple con el esquema definido.
+
+### GET /status
+
+- **Descripción:** Verifica el estado del servicio.
+- **Ruta:** `routes/status.py`
+- **Respuesta:**
+  - `200 OK`: Devuelve el estado del servicio.
 
 ## Diagrama de Arquitectura
 
@@ -24,7 +75,7 @@ Este documento describe la arquitectura y los componentes del sistema, incluyend
 | Manejo de Respuestas             | `utils/handle_response.py`   | Proporciona funciones para manejar y formatear las respuestas de la API.                                                    |
 | Dataset de Nombres               | `assets/names_dataset.csv`   | Archivo CSV que contiene la lista de nombres a comparar.                                                                    |
 
-## Justificación de Tecnologías y Decisiones de Diseño
+## Justificación de Librerías y Decisiones de Diseño
 
 - **Flask:** Seleccionado por su simplicidad y flexibilidad para construir aplicaciones web ligeras.
 - **Flask-JWT-Extended:** Utilizado para manejar la autenticación basada en tokens JWT.
